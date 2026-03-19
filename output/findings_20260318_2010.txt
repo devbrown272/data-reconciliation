@@ -1,0 +1,40 @@
+
+RECONCILIATION FINDINGS — FW2024-Q3
+=======================================================
+Run date:        2026-03-18 20:10
+Variance threshold: 2.0%
+
+SUMMARY
+-------
+Total stores compared:     12
+Stores within tolerance:   7
+Stores flagged for review: 4
+Stores missing from feed:  1
+Total absolute variance:   $18,189.56
+Highest variance store:    Store_03
+
+ROOT CAUSES IDENTIFIED
+----------------------
+1. RETURN HANDLING MISMATCH (affects 4 stores)
+   Source A uses actual transaction-level return amounts.
+   Source B uses a flat average return deduction of $180.00.
+   This causes a systematic variance in stores with high return
+   rates or large-value returns.
+
+   Recommendation: Standardize return treatment across both systems,
+   or document the difference clearly so field users understand
+   why the two reports will never match exactly.
+
+2. MISSING DATA FEED (1 store(s))
+   One store is absent from Source B entirely, indicating a data
+   feed failure between the POS system and the reporting platform.
+
+   Recommendation: Investigate the ETL pipeline for the affected
+   store. Add a row-count validation to the feed process so missing
+   stores are caught automatically before reports are distributed.
+
+NEXT STEPS
+----------
+- Share findings with the BA team for Source B logic review
+- Escalate feed failure to data engineering
+- Add automated variance alerting for future periods

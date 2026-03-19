@@ -1,0 +1,8 @@
+2026-03-18 20:10:01,426 — INFO — \u2550\u2550\u2550 Reconciliation run started — FW2024-Q3 \u2550\u2550\u2550
+2026-03-18 20:10:01,531 — INFO — Source A generated — 3,171 transactions across 12 stores
+2026-03-18 20:10:01,534 — INFO — Source B generated — 11 stores (1 missing due to feed issue)
+2026-03-18 20:10:01,540 — INFO — Reconciliation complete — 5 stores flagged out of 12
+2026-03-18 20:10:01,543 — INFO — Findings summary generated
+2026-03-18 20:10:01,840 — INFO — Report exported to output/reconciliation_report_20260318_2010.xlsx
+2026-03-18 20:10:01,840 — INFO — Findings exported to output/findings_20260318_2010.txt
+2026-03-18 20:10:01,841 — INFO — \u2550\u2550\u2550 Complete in 0.41s \u2550\u2550\u2550
