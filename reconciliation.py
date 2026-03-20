@@ -4,7 +4,7 @@ import os
 import logging
 from datetime import datetime
 
-# ── Setup ──────────────────────────────────────────────────────────────────────
+# Setup
 os.makedirs('output', exist_ok=True)
 
 logging.basicConfig(
@@ -13,18 +13,17 @@ logging.basicConfig(
     format='%(asctime)s — %(levelname)s — %(message)s'
 )
 
-# ── Configuration ──────────────────────────────────────────────────────────────
-VARIANCE_THRESHOLD_PCT = 2.0   # Flag any store where sources differ by more than 2%
+# Configuration
+VARIANCE_THRESHOLD_PCT = 2.0   # Flags stores with variance greater than two percent
 REPORT_PERIOD          = 'FW2024-Q3'
 NUM_STORES             = 12
 SEED                   = 42
 
 
-# ── Step 1: Generate Source A — Transaction-level extract ──────────────────────
+# Generates Source A w transactions extract
 def generate_source_a(num_stores, seed):
     """
-    Source A simulates a transaction-level POS extract.
-    This is the raw data — every sale recorded individually.
+    Source A simulates individual transactions as a messy dataset.
     Net sales = gross sales minus returned transaction amounts.
     """
     np.random.seed(seed)
@@ -63,33 +62,31 @@ def generate_source_a(num_stores, seed):
     return source_a
 
 
-# ── Step 2: Generate Source B — Summary reporting system ──────────────────────
+# Generate Source b summary reporting system
 def generate_source_b(source_a, seed):
     """
-    Source B simulates a summary report from a second system (e.g. SAP or a
-    corporate dashboard). It reports net sales differently — returns are
-    excluded from the transaction count but the sales amount uses a different
-    return handling method, causing a systematic variance vs. Source A.
+    Source B simulates a summary report from SAP. It reports net sales differently,
+    causing a systematic variance vs. Source A.
 
     This mirrors a real reconciliation problem: two systems using different
-    business logic to define the 'same' metric.
+     logic to define the same metric.
     """
     np.random.seed(seed + 1)
 
     source_b = source_a[['store_id', 'region']].copy()
 
-    # Source B uses a flat return deduction (average return value) rather than
-    # actual transaction-level returns — common in summary reporting systems
+    # Source B uses average return value
+    # common in summary reporting systems
     avg_return_value = 180.00
     source_b['net_sales_source_b'] = source_a.apply(
         lambda r: round(
             r['gross_sales'] - (r['returns'] * avg_return_value)
-            + np.random.uniform(-50, 50),   # small system rounding noise
+            + np.random.uniform(-50, 50),   # eliminates noise
             2
         ), axis=1
     )
 
-    # Introduce one missing store to simulate a data feed failure
+    # missing seed error fix
     drop_idx = source_b.sample(1, random_state=seed).index
     source_b = source_b.drop(drop_idx).reset_index(drop=True)
 
@@ -98,7 +95,7 @@ def generate_source_b(source_a, seed):
     return source_b
 
 
-# ── Step 3: Reconcile ──────────────────────────────────────────────────────────
+# Reconcile
 def reconcile(source_a, source_b, threshold):
     """
     Outer join both sources on store_id.
@@ -137,11 +134,10 @@ def reconcile(source_a, source_b, threshold):
     return recon
 
 
-# ── Step 4: Build findings summary ────────────────────────────────────────────
+# Findings summary
 def build_findings(recon, threshold):
     """
-    Produce a plain-English findings summary — the kind of output you'd
-    actually deliver to a HelpDesk escalation or field leader inquiry.
+    Produce a findings summary that can be shared directly.
     """
     total        = len(recon)
     ok           = len(recon[recon['flag'] == 'OK'])
@@ -188,8 +184,8 @@ ROOT CAUSES IDENTIFIED
 
 NEXT STEPS
 ----------
-- Share findings with the BA team for Source B logic review
-- Escalate feed failure to data engineering
+- Share findings with team for logic review
+- Escalate feed failure
 - Add automated variance alerting for future periods
 """
     print(findings)
@@ -197,11 +193,10 @@ NEXT STEPS
     return findings
 
 
-# ── Step 5: Export ─────────────────────────────────────────────────────────────
+# Export
 def export(recon, findings, output_path, findings_path):
     """
-    Export the reconciliation detail to Excel and the findings to a text file.
-    Both are ready to attach to a HelpDesk ticket or share with stakeholders.
+    Export the reconciliation detail to Excel and the findings to a text file to share.
     """
     cols = [
         'store_id', 'region', 'transactions', 'gross_sales', 'returns',
@@ -226,7 +221,7 @@ def export(recon, findings, output_path, findings_path):
     print(f"  [export]   Findings summary      → {findings_path}")
 
 
-# ── Main Runner ────────────────────────────────────────────────────────────────
+# Main Runner
 def run():
     print(f"\n── Data Reconciliation Pipeline — {REPORT_PERIOD} ──")
     logging.info(f"═══ Reconciliation run started — {REPORT_PERIOD} ═══")
